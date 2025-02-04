@@ -6,9 +6,7 @@ import UntappdAPI
 actor BeerRepublicRepository {
 
   private let networkSession = NetworkSession.shared
-
   private let untappdAPI = UntappdAPI()
-
   private lazy var beerRepublicAPI: BeerRepublicAPI = {
     BeerRepublicAPI(configuration: BeerRepublicAPI.Configuration(networkSession: networkSession))
   }()
@@ -69,14 +67,14 @@ actor BeerRepublicRepository {
     for beerItem in beerItems {
       var haveNotHad: Bool = false
       if let untappdUsername, !untappdUsername.isEmpty {
-        let checkin = try await getCheckinSearchResults(for: untappdUsername, with: beerItem.product)
+        let checkin = try await getCheckinSearchResults(for: untappdUsername, with: beerItem)
         haveNotHad = checkin.results.isEmpty
       }
       guard haveNotHad else {
         continue
       }
       checkedBeerItems.append(beerItem)
-      orderPrice += Int(beerItem.product.price.amount.rounded(.up))
+      orderPrice += Int(beerItem.price.rounded(.up))
       if let orderLimit, orderPrice >= orderLimit {
         break
       }
@@ -86,7 +84,7 @@ actor BeerRepublicRepository {
 
   func getCartLink(for beers: [BeerRepublicItem]) -> URL? {
     let path: String = beers
-      .map { "\($0.product.id):1" }
+      .map { "\($0.id):1" }
       .joined(separator: ",")
     let urlString = "https://beerrepublic.eu/cart/\(path)?attributes%5Bfrom%5D=new-customer-accounts&storefront=true"
     return URL(string: urlString)
@@ -118,10 +116,10 @@ private extension BeerRepublicRepository {
 //    return response.result
 //  }
 
-  func getCheckinSearchResults(for untappdUsername: String, with product: ProductModel) async throws -> CheckinSearchResultsModel {
+  func getCheckinSearchResults(for untappdUsername: String, with product: BeerRepublicItem) async throws -> CheckinSearchResultsModel {
     let request = untappdAPI.customer.requestUserCheckinSearch(
       for: untappdUsername,
-      with: product.product.title
+      with: product.vendor + " " + product.title
     )
     let response = try await untappdAPI.perform(request)
     return response.result

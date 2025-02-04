@@ -44,6 +44,11 @@ extension ExternalDependency {
     product: .product(name: "SwiftSoup", package: "SwiftSoup"),
     package: .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.7.5")
   )
+
+//  static let swiftDependencies = ExternalDependency(
+//    product: .product(name: "Dependencies", package: "swift-dependencies"),
+//    package: .package(url: "https://github.com/pointfreeco/swift-dependencies.git", from: "1.7.0")
+//  )
 }
 
 // MARK: - Modules
@@ -60,10 +65,11 @@ extension Module {
     ],
     externalDependencies: [
       .kingfisher,
-      .swiftAsyncAlgorithms
+      .swiftAsyncAlgorithms,
+      //.swiftDependencies
     ],
     resources: [
-      //.process("Resources")
+      .process("Resources")
     ]
   )
 

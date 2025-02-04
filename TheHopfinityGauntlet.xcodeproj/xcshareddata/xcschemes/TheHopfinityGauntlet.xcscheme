@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "79409A162D3718EC00612235"
-               BuildableName = "TheHopfinityGauntlet.app"
+               BuildableName = "Hopfinity Gauntlet.app"
                BlueprintName = "TheHopfinityGauntlet"
                ReferencedContainer = "container:TheHopfinityGauntlet.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "79409A162D3718EC00612235"
-            BuildableName = "TheHopfinityGauntlet.app"
+            BuildableName = "Hopfinity Gauntlet.app"
             BlueprintName = "TheHopfinityGauntlet"
             ReferencedContainer = "container:TheHopfinityGauntlet.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "79409A162D3718EC00612235"
-            BuildableName = "TheHopfinityGauntlet.app"
+            BuildableName = "Hopfinity Gauntlet.app"
             BlueprintName = "TheHopfinityGauntlet"
             ReferencedContainer = "container:TheHopfinityGauntlet.xcodeproj">
          </BuildableReference>

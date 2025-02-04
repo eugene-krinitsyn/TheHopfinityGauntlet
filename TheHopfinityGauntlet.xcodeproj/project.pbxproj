@@ -14,7 +14,7 @@
 
 /* Begin PBXFileReference section */
 		7925BE8E2D3AE21F00CA4A31 /* Application */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Application; sourceTree = "<group>"; };
-		79409A172D3718EC00612235 /* TheHopfinityGauntlet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheHopfinityGauntlet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		79409A172D3718EC00612235 /* Hopfinity Gauntlet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Hopfinity Gauntlet.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -72,7 +72,7 @@
 		79409A182D3718EC00612235 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				79409A172D3718EC00612235 /* TheHopfinityGauntlet.app */,
+				79409A172D3718EC00612235 /* Hopfinity Gauntlet.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,7 +102,7 @@
 				7925BE942D3AE22B00CA4A31 /* NetworkSession */,
 			);
 			productName = TheHopfinityGauntlet;
-			productReference = 79409A172D3718EC00612235 /* TheHopfinityGauntlet.app */;
+			productReference = 79409A172D3718EC00612235 /* Hopfinity Gauntlet.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -306,7 +306,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.avdv.clyx.dev;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Hopfinity Gauntlet";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -348,7 +348,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.avdv.clyx.dev;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Hopfinity Gauntlet";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
