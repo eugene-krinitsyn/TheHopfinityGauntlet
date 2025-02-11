@@ -3,9 +3,10 @@ import Foundation
 @MainActor
 final class BRPresetsStore: ObservableObject, Sendable {
 
-  @Published private(set) var filters: [String: [String]]?
+  @Published private(set) var filters: [BRFilter]?
   @Published var preferences = BRPreferences()
 
+  @Published var scanningTask: Task<Void, Error>?
   @Published private(set) var searchResults: [BeerRepublicItem]?
 
   private var repository = BeerRepublicRepository()

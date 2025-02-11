@@ -51,6 +51,7 @@ public struct ProductModel: Decodable, Sendable {
   public let sku: String
   public let title: String
   public let untranslatedTitle: String
+  public let image: ImageModel?
 }
 
 public struct PriceModel: Decodable, Sendable {
@@ -63,6 +64,10 @@ public struct ProductItemModel: Decodable, Sendable {
   public let vendor: String
   public let id: String
   public let untranslatedTitle: String
-  public let url: String
-  public let type: String
+  public let url: String // "\/products\/double-bag?_pos=3\u0026_fid=738a0eb3b\u0026_ss=c"
+  public let type: String //  "Brown \u0026 Dark"
+}
+
+public struct ImageModel: Decodable, Sendable {
+  public let src: String // "\/\/beerrepublic.eu\/cdn\/shop\/files\/DoubleBag_1.png?v=1734145690"
 }

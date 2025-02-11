@@ -8,9 +8,7 @@ struct BRPresetsView: View {
   @Environment(\.navigate) private var navigate
 
   @ObservedObject var store: BRPresetsStore
-
-  @State private(set) var isScanning: Bool = false
-  @State private(set) var error: Error?
+  @State private var error: Error?
 
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
@@ -74,16 +72,14 @@ struct BRPresetsView: View {
 
 private extension BRPresetsView {
   @ViewBuilder
-  func buildFiltersList(_ filters: [String: [String]]) -> some View {
+  func buildFiltersList(_ filters: [BRFilter]) -> some View {
     VStack(alignment: .leading, spacing: 20) {
-      ForEach(filters.map { $0.key }.sorted(), id: \.self) { key in
-        if let values = filters[key] {
-          VStack(alignment: .leading, spacing: 10) {
-            buildMenu(values, key: key)
+      ForEach(filters) { filter in
+        VStack(alignment: .leading, spacing: 10) {
+          buildMenu(filter)
 
-            if let selected = store.preferences.selectedFilters[key] {
-              buildSelectedFiltersList(selected, for: key)
-            }
+          if let selected = store.preferences.selectedFilters[filter.key] {
+            buildSelectedFiltersList(selected, for: filter.key)
           }
         }
       }
@@ -91,33 +87,19 @@ private extension BRPresetsView {
   }
 
   @ViewBuilder
-  func buildMenu(_ values: [String], key: String) -> some View {
-    HStack(alignment: .center, spacing: 8) {
-      let isFilterActive: Bool = store.preferences.selectedFilters.contains(where: { $0.key == key })
-      Text(key.capitalized)
-        .foregroundColor(isFilterActive ? Color(.textActive) : Color(.textInactive))
+  func buildMenu(_ filter: BRFilter) -> some View {
+    let isFilterActive: Bool = store.preferences.selectedFilters.contains(where: { $0.key == filter.key })
 
-      Menu {
-        ForEach(values.sorted(), id: \.self) { value in
-          Button {
-            store.preferences.selectFilter(value, type: key)
-          } label: {
-            if store.preferences.selectedFilters[key]?.contains(value) == true {
-              Label(value, systemImage: "checkmark")
-            } else {
-              Text(value)
-            }
-          }
-        }
-      } label: {
-        Image(systemName: "plus.circle.fill")
+    FilterView(
+      filter: filter,
+      isFilterActive: isFilterActive,
+      isFilterValueSelected: { value in
+        store.preferences.selectedFilters.contains(where: { $0.value.contains(value) })
+      },
+      selectFilterKeyValue: { key, value in
+        store.preferences.selectFilter(value, type: key)
       }
-      .menuStyle(.borderlessButton)
-      .buttonStyle(.plain)
-      .labelsHidden()
-      .menuIndicatorHidden()
-      .frame(width: 20, height: 20)
-    }
+    )
   }
 
   @ViewBuilder
@@ -204,21 +186,25 @@ private extension BRPresetsView {
   func buildScanButton() -> some View {
     HStack {
       Button {
-        isScanning = true
-        Task { @MainActor in
-          do {
-            let beers = try await store.scanForBeers()
-            navigate(.results(beers))
-          } catch {
-            self.error = error
+        if store.scanningTask != nil {
+          store.scanningTask?.cancel()
+          store.scanningTask = nil
+        } else {
+          store.scanningTask = Task { @MainActor in
+            do {
+              let beers = try await store.scanForBeers()
+              navigate(.results(beers))
+            } catch {
+              self.error = error
+            }
+            store.scanningTask = nil
           }
-          isScanning = false
         }
       } label: {
         HStack {
           Spacer()
-          Text("Scan beers")
-          if isScanning {
+          Text(store.scanningTask != nil ? "Cancel" : "Scan beers")
+          if store.scanningTask != nil {
             ProgressView()
               .controlSize(.small)
           }
@@ -230,9 +216,109 @@ private extension BRPresetsView {
         .cornerRadius(8)
         .contentShape(.rect)
       }
-      .disabled(isScanning)
       .buttonStyle(.plain)
     }
+  }
+}
+
+// MARK: - Filter View
+
+struct FilterView: View {
+  let filter: BRFilter
+  let isFilterActive: Bool
+  let isFilterValueSelected: (String) -> Bool
+  let selectFilterKeyValue: (String, String) -> Void
+  @State private var showPopover = false
+
+  var body: some View {
+    HStack(alignment: .center, spacing: 8) {
+      Text(filter.key.capitalized)
+        .foregroundColor(isFilterActive ? Color(.textActive) : Color(.textInactive))
+
+      Button {
+        showPopover = true
+      } label: {
+        Image(systemName: "plus.circle.fill")
+      }
+      .popover(isPresented: $showPopover) {
+        PopoverMenu(
+          filter: filter,
+          isFilterValueSelected: isFilterValueSelected,
+          selectFilterKeyValue: selectFilterKeyValue
+        )
+      }
+
+
+//      Menu {
+//        ForEach(values.sorted(), id: \.self) { value in
+//          Button {
+//            store.preferences.selectFilter(value, type: key)
+//          } label: {
+//            if store.preferences.selectedFilters[key]?.contains(value) == true {
+//              Label(value, systemImage: "checkmark")
+//            } else {
+//              Text(value)
+//            }
+//          }
+//        }
+//      } label: {
+//        Image(systemName: "plus.circle.fill")
+//      }
+//      .menuStyle(.borderlessButton)
+//      .buttonStyle(.plain)
+//      .labelsHidden()
+//      .menuIndicatorHidden()
+//      .frame(width: 20, height: 20)
+    }
+  }
+}
+
+
+// MARK: - Popover Menu
+
+struct PopoverMenu: View {
+  let filter: BRFilter
+  let isFilterValueSelected: (String) -> Bool
+  let selectFilterKeyValue: (String, String) -> Void
+  @Environment(\.presentationMode) @Binding
+  private var presentationMode
+
+  var body: some View {
+    VStack(alignment: .leading) {
+      Text("Select \(filter.key.capitalized)")
+        .font(.headline)
+        .padding(.horizontal)
+      Divider()
+      ScrollView {
+        VStack(alignment: .leading) {
+          ForEach(filter.values, id: \.self) { value in
+            HStack {
+              Toggle(
+                isOn: Binding(
+                  get: { isFilterValueSelected(value) },
+                  set: { _ in
+                    selectFilterKeyValue(filter.key, value)
+                  }
+                )
+              ) {
+                HStack {
+                  Text(value)
+                  Spacer()
+                }
+              }
+            }
+          }
+        }
+        .padding(.horizontal)
+      }
+      Divider()
+      Button("Done") {
+        presentationMode.dismiss()
+      }
+      .padding(.horizontal)
+    }
+    .padding(.vertical)
+    .frame(maxHeight: 500)
   }
 }
 

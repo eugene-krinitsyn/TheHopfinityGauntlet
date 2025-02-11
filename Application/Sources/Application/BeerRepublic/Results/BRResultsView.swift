@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import BeerRepublicAPI
+import Kingfisher
 
 struct BRResultsView: View {
   @ObservedObject var store: BRResultsStore
@@ -33,7 +34,7 @@ private extension BRResultsView {
   @ViewBuilder
   func buildBeersResultsView(_ beers: [BeerRepublicItem]) -> some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 8) {
+      LazyVStack(alignment: .leading, spacing: 8) {
         ForEach(beers) { beer in
           buildItemView(beer)
         }
@@ -44,49 +45,67 @@ private extension BRResultsView {
   @ViewBuilder
   func buildItemView(_ item: BeerRepublicItem) -> some View {
     HStack(spacing: 0) {
-      VStack(alignment: .leading, spacing: 4) {
-        HStack(alignment: .top, spacing: 10) {
-          Text(item.vendor + " - " + item.title)
-            .font(.headline)
-            .multilineTextAlignment(.leading)
-          Spacer()
-          Button {
-            withAnimation {
-              store.onTapRemoveBeer(item)
-            }
-          } label: {
-            Image(systemName: "xmark.circle")
+      HStack(alignment: .top, spacing: 10) {
+        KFImage(item.image)
+          .placeholder {
+            Color.gray.opacity(0.1)
           }
-          .buttonStyle(.plain)
-        }
-        if let date = store.getBeerExpiration(item) {
-          Text("Expires on: \(date)")
+          .resizable()
+          .retry(maxCount: 3)
+          .aspectRatio(contentMode: .fit)
+          .frame(width: 60, height: 100)
+
+        VStack(alignment: .leading, spacing: 4) {
+          HStack(alignment: .top, spacing: 10) {
+            Text(item.vendor + " - " + item.title)
+              .font(.headline)
+              .multilineTextAlignment(.leading)
+
+            Spacer()
+
+            Button {
+              withAnimation {
+                store.onTapRemoveBeer(item)
+              }
+            } label: {
+              Image(systemName: "xmark.circle")
+            }
+            .buttonStyle(.plain)
+          }
+
+          Text(item.style)
             .foregroundColor(.secondary)
-        }
-        if let price = store.getBeerPrice(item) {
-          Text(price)
-            .bold()
-        }
 
-        HStack {
-          Button {
-            Task { @MainActor in
-              if let url = store.getBeerLink(item) {
-                openURL(url)
-              }
-            }
-          } label: {
-            Text("Beer Republic")
+          if let date = store.getBeerExpiration(item) {
+            Text("Expires on: \(date)")
+              .foregroundColor(.secondary)
           }
 
-          Button {
-            Task { @MainActor in
-              if let url = store.getUntappdSearchLink(item) {
-                openURL(url)
+          if let price = store.getBeerPrice(item) {
+            Text(price)
+              .bold()
+          }
+
+          HStack {
+            Button {
+              Task { @MainActor in
+                if let url = store.getBeerLink(item) {
+                  openURL(url)
+                }
               }
+            } label: {
+              Text("Beer Republic")
             }
-          } label: {
-            Text("Untappd")
+
+            Button {
+              Task { @MainActor in
+                if let url = store.getUntappdSearchLink(item) {
+                  openURL(url)
+                }
+              }
+            } label: {
+              Text("Untappd")
+            }
           }
         }
       }

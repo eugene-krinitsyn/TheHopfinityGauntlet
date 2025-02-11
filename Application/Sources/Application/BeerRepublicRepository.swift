@@ -23,10 +23,12 @@ actor BeerRepublicRepository {
 //    )
 //  }()
 
-  func getFilters() async throws -> [String: [String]] {
+  func getFilters() async throws -> [BRFilter] {
     let request = beerRepublicAPI.collections.requestFilters()
     let response = try await beerRepublicAPI.perform(request)
     return response.result.filters
+      .map { BRFilter(key: $0.key, values: $0.value.sorted()) }
+      .sorted(by: { $0.key < $1.key })
   }
 
   func getBeers(
@@ -95,6 +97,7 @@ actor BeerRepublicRepository {
 
 private extension BeerRepublicRepository {
   func getBeers(page: Int, filters: [String: [String]], priceLimit: Int? = nil) async throws -> CollectionModel {
+    try Task.checkCancellation()
     let request = beerRepublicAPI.collections.requestBeers(
       filters: filters,
       priceLimit: priceLimit,
@@ -105,6 +108,7 @@ private extension BeerRepublicRepository {
   }
 
   func getExpirationForBeer(_ product: ProductModel) async throws -> Date? {
+    try Task.checkCancellation()
     let request = beerRepublicAPI.collections.requestBeerDetails(url: product.product.url)
     let response = try? await beerRepublicAPI.perform(request)
     return response?.result.date
@@ -117,6 +121,7 @@ private extension BeerRepublicRepository {
 //  }
 
   func getCheckinSearchResults(for untappdUsername: String, with product: BeerRepublicItem) async throws -> CheckinSearchResultsModel {
+    try Task.checkCancellation()
     let request = untappdAPI.customer.requestUserCheckinSearch(
       for: untappdUsername,
       with: product.vendor + " " + product.title
