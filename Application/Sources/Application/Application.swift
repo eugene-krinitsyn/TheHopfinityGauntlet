@@ -3,7 +3,9 @@ import SwiftUI
 
 public struct MainView: View {
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-  let presetsStore = BRPresetsStore()
+  //let presetsStore = BRPresetsStore()
+  let splitStore = SplitStore(presetsStore: BRPresetsStore())
+  @StateObject var cartStore = BRCartStore()
 
 #if os(iOS)
   @State private var router = Router()
@@ -25,7 +27,12 @@ public struct MainView: View {
       }
     }))
 #else
-    SplitView(store: SplitStore(presetsStore: presetsStore))
+    SplitView(store: splitStore)
+      .environmentObject(cartStore)
 #endif
   }
+}
+
+#Preview {
+  MainView()
 }

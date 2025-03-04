@@ -2,7 +2,7 @@ import Foundation
 import BeerRepublicAPI
 import UntappdAPI
 
-struct BeerRepublicItem: Identifiable, Hashable {
+struct BeerRepublicItem: Identifiable, Hashable, Equatable {
   let id: String
   let beerId: String
   let title: String

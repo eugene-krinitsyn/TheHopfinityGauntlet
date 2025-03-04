@@ -6,63 +6,24 @@ import Kingfisher
 struct BRPresetsView: View {
   @Environment(\.openURL) private var openURL
   @Environment(\.navigate) private var navigate
+  @EnvironmentObject var cart: BRCartStore
 
   @ObservedObject var store: BRPresetsStore
   @State private var error: Error?
+  @State private var showPopover = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      if let filters = store.filters {
-        ScrollView {
-          VStack(alignment: .leading, spacing: 40) {
-            KFImage(URL(string: "https://cdn.shopify.com/s/files/1/0691/2887/files/Beer_Republic_Logo_BLUE_Tekengebied_1_91245b1c-e467-4cf4-b428-2a558d37aa7b.png")!)
-              .resizable()
-              .retry(maxCount: 3)
-              .aspectRatio(contentMode: .fit)
-              .frame(maxWidth: 150)
+    VStack(alignment: .leading, spacing: 0) {
+      VStack(spacing: 10) {
+        buildHeader()
+        Divider()
+      }
 
-            VStack(alignment: .leading, spacing: 20) {
-              Text("Filters")
-                .font(.headline)
-              buildFiltersList(filters)
-            }
+      buildFilters(store.filters)
 
-            VStack(alignment: .leading, spacing: 20) {
-              Text("Limits")
-                .font(.headline)
-              buildPriceLimitTextField()
-              buildOrderLimitTextField()
-              buildQuantityLimitTextField()
-              buildExpirationDatePicker()
-            }
-
-            VStack(alignment: .leading, spacing: 20) {
-              Text("Personalization")
-                .font(.headline)
-              buildUsernameTextField()
-            }
-
-            if let error {
-              buildErrorMessageView(error)
-            }
-
-            buildScanButton()
-              .padding(.top, error == nil ? 50 : 0)
-
-            Spacer()
-          }
-          .padding(16)
-        }
-      } else {
-        VStack {
-          Spacer()
-          HStack {
-            Spacer()
-            ProgressView()
-            Spacer()
-          }
-          Spacer()
-        }
+      VStack(spacing: 10) {
+        Divider()
+        buildFooter()
       }
     }
   }
@@ -71,6 +32,90 @@ struct BRPresetsView: View {
 // MARK: - View Builders
 
 private extension BRPresetsView {
+  @ViewBuilder
+  func buildHeader() -> some View {
+    HStack(alignment: .top, spacing: 0) {
+      KFImage(URL(string: "https://cdn.shopify.com/s/files/1/0691/2887/files/Beer_Republic_Logo_BLUE_Tekengebied_1_91245b1c-e467-4cf4-b428-2a558d37aa7b.png")!)
+        .resizable()
+        .retry(maxCount: 3)
+        .aspectRatio(contentMode: .fit)
+        .frame(maxWidth: 150)
+      Spacer()
+      Button {
+        showPopover = true
+      } label: {
+        HStack {
+          Image(systemName: "cart")
+          if !cart.beers.isEmpty {
+            Text("\(cart.beers.count)")
+              .font(.subheadline)
+              .foregroundColor(Color.white)
+              .padding(4)
+              .background(Color.red)
+              .clipShape(Circle())
+          }
+        }
+      }
+      .popover(isPresented: $showPopover) {
+        BRCartView()
+      }
+    }
+    .padding(16)
+  }
+
+  @ViewBuilder
+  func buildFilters(_ filters: [BRFilter]?) -> some View {
+    if let filters {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 40) {
+          VStack(alignment: .leading, spacing: 20) {
+            Text("Filters")
+              .font(.headline)
+            buildFiltersList(filters)
+          }
+
+          VStack(alignment: .leading, spacing: 20) {
+            Text("Limits")
+              .font(.headline)
+            buildPriceLimitTextField()
+            buildOrderLimitTextField()
+            buildQuantityLimitTextField()
+            buildExpirationDatePicker()
+          }
+
+          VStack(alignment: .leading, spacing: 20) {
+            Text("Personalization")
+              .font(.headline)
+            buildUsernameTextField()
+          }
+
+          if let error {
+            buildErrorMessageView(error)
+          }
+
+          Spacer()
+        }
+        .padding(16)
+      }
+    } else {
+      VStack {
+        Spacer()
+        HStack {
+          Spacer()
+          ProgressView()
+          Spacer()
+        }
+        Spacer()
+      }
+    }
+  }
+
+  @ViewBuilder
+  func buildFooter() -> some View {
+    buildScanButton()
+      .padding(16)
+  }
+
   @ViewBuilder
   func buildFiltersList(_ filters: [BRFilter]) -> some View {
     VStack(alignment: .leading, spacing: 20) {
@@ -217,6 +262,7 @@ private extension BRPresetsView {
         .contentShape(.rect)
       }
       .buttonStyle(.plain)
+      .disabled(store.filters == nil)
     }
   }
 }
