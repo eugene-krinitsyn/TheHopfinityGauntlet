@@ -6,6 +6,7 @@ struct BRBeerListView: View {
   @Binding var beers: [BeerRepublicItem]
 
   @Environment(\.openURL) private var openURL
+  @State private var currentScrollId: String? = nil
 
   var body: some View {
     buildBeersResultsView(beers)
@@ -15,10 +16,19 @@ struct BRBeerListView: View {
 private extension BRBeerListView {
   @ViewBuilder
   func buildBeersResultsView(_ beers: [BeerRepublicItem]) -> some View {
-    ScrollView {
-      LazyVStack(alignment: .leading, spacing: 8) {
-        ForEach(beers) { beer in
-          buildItemView(beer)
+    ScrollViewReader { scrollViewReader in
+      ScrollView {
+        LazyVStack(alignment: .leading, spacing: 8) {
+          ForEach(beers) { beer in
+            buildItemView(beer)
+              .id(beer.id)
+          }
+        }
+      }
+      .onChange(of: beers) { _ in
+        guard beers.contains(where: { $0.id == currentScrollId }) else { return }
+        withAnimation {
+          scrollViewReader.scrollTo(currentScrollId, anchor: .center)
         }
       }
     }
@@ -50,6 +60,8 @@ private extension BRBeerListView {
                 guard let index = beers.firstIndex(where: { $0.id == item.id }) else {
                   return
                 }
+                saveScrollPosition(for: index)
+
                 beers.remove(at: index)
               }
             } label: {
@@ -96,6 +108,12 @@ private extension BRBeerListView {
 }
 
 private extension BRBeerListView {
+  func saveScrollPosition(for index: Int) {
+    guard beers.count > 3 else { return }
+    let nextIndex = index != (beers.endIndex - 1) ? beers.index(after: index) : beers.index(before: index)
+    currentScrollId = beers[nextIndex].id
+  }
+
   private static let dateFormatter: DateFormatter = {
     let f = DateFormatter()
     f.dateFormat = "dd-MM-yyyy"
