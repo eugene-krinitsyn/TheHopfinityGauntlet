@@ -80,6 +80,9 @@ actor BeerRepublicRepository {
       if let orderLimit, orderPrice >= orderLimit {
         break
       }
+      if let quantityLimit, checkedBeerItems.count >= quantityLimit {
+        break
+      }
     }
     return checkedBeerItems
   }
